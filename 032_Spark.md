@@ -1,15 +1,83 @@
+# 1第一个例子，官方中的圆周率 PI
+
+```
+bin/spark-submit \
+--class org.apache.spark.examples.SparkPi \
+--executor-memory 1G \
+--total-executor-cores 2 \
+./examples/jars/spark-examples_2.11-2.1.1.jar \
+100
+```
+
+```
+bin/spark-submit \
+--class org.apache.spark.examples.SparkPi \
+--executor-memory 1G \
+--total-executor-cores 2 \
+./examples/jars/spark-examples_2.11-2.1.1.jar \
+1000000
+```
+
+
+
+# 2一个监控网址
+
+运行这个命令。如果出来欢迎页面。说明安装没问题。
+
+bin/spark-shell
+
+监控地址
+
+192.168.10.102:4040
+
+http://192.168.10.120:4040
+
+```
+mkdir input
+1.txt
+2.txt
+sc.textFile("input").flatMap(_.split(" ")).map((_,1)).reduceByKey(_+_).collect
+```
+
+# 3重要角色
+
+## 		驱动器
+
+## 		执行器
+
+# 4一些模式
+
+## local模式
+
+## standalone模式
+
+## yarn模式（重点）
+
+​		Spark 交个yarn执行
+
+​		yarn的运行流程
+
+## Mesos模式（了解）
+
+# 案例实操
+
+## 
+
+## 
+
+
 
 
 # 1java IO
 
-​                 输入和输出
+  输入和输出
 
- 				字节流（rar，zip，dat，图片）和字符流（txt）
+ 	字节流（rar，zip，dat，图片）和字符流（txt）
 
 ```java
-		//java io 的设计模式：装饰者设计模式
-        //InputStream in= FileInputStream("");
-        //InputStream buffer =new BufferedInputStream(new FileInputStream(""));
+//java io 的设计模式：装饰者设计模式
+//InputStream in= FileInputStream("");
+//InputStream buffer =new BufferedInputStream(new FileInputStream(""));
 ```
 
 
@@ -119,6 +187,42 @@ lines.saveAsObjectFile("out")
 ```
 
 
+
+# SparkSQL - 介绍
+
+# SparkSQL - 说明
+
+处理结构化数据，2个编程抽象，DataFrame和DateSet。 
+
+# SparkSQL - RDD DataSet DataFrame
+
+什么是DataSet
+
+# SparkSQL - DataFrame的基本操作
+
+# SparkSQL - DataSet的基本操作
+
+# SparkSQL - 采用IDEA开发SparkSQL程序
+
+# SparkSQL - 采用IDEA开发SparkSQL程序
+
+# SparkSQL - 自定义用户聚合函数（弱类型）
+
+# SparkSQL - 自定义用户聚合函数（强类型）
+
+什么是SparkSQL
+
+​	
+
+​	SparkSQL是spark用来处理结构化数据的一个模块，它提供了2个编程抽象，DataFrame和dataSet，并作为分布式SQL查询引擎的作用
+
+
+
+hive  它是将Hive SQL转换为MapReduce然后提交到集群上执行 
+
+
+
+SparkSQL的特点：易整合，
 
 
 
