@@ -68,7 +68,12 @@ Hadoop的各个Web界面的地址和接口
 
 安装
 
-​	tar -zxvf  
+​		
+
+```
+tar -zxvf apache-hive-1.2.1-bin.tar.gz -C /usr/soft/
+mv apache-hive-1.2.1-bin/  hive/
+```
 
 配置文件  #cat hive-env.sh 
 
@@ -121,11 +126,11 @@ Hadoop的各个Web界面的地址和接口
 
 # Set HADOOP_HOME to point to a specific hadoop install directory
 #hadoop的地址
- HADOOP_HOME=/home/soft/hadoop-2.7.2
+ HADOOP_HOME=/usr/soft/hadoop-2.7.2
 
 # Hive Configuration Directory can be controlled by:
 # hive 配置地址
-export HIVE_CONF_DIR=/home/soft/hive/conf
+export HIVE_CONF_DIR=/usr/soft/hive/conf
 
 # Folder containing extra ibraries required for hive compilation/execution can be controlled by:
 # export HIVE_AUX_JARS_PATH=
@@ -1536,5 +1541,4 @@ select sal+1 from emp;
 
 
 ```
-
 

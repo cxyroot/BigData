@@ -419,8 +419,6 @@ hadoop的持久化策略。Fsimage，edits.log
 
 # 12Hadoop的实际应用
 
-<img src="D:\BigData\01hadoop\1568508784688.png"  />
-
 # 13Hadoop的架构模型
 
 架构模型
@@ -591,6 +589,50 @@ MapTask +ReduceTask=原理
 ​	分区号不能跳，要连续。防止浪费资源。
 
 #### 排序
+
+
+
+# YARN是什么
+
+# YARN的基本架构
+
+# YARN的工作机制
+
+# HDFS,YARN和YARN的联合工作模式
+
+# 资源调度器
+
+# 任务的推测执行
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
