@@ -11,8 +11,7 @@
 的消费者都属于某个消费者组，即 消费者组是逻辑上的一个订阅者。
 4 ）Broker  ：一台 kafka 服务器就是一个 broker。一个集群由多个 broker 组成。一个 broker
 可以容纳多个 topic。
-5 ）Topic ： ：可以理解为一个队列，个
-生产者和消费者面向的都是一个 topic；
+5 ）Topic ： ：可以理解为一个队列，一个生产者和消费者面向的都是一个 topic；
 6 ）Partition ：为了实现扩展性，一个非常大的 topic 可以分布到多个 broker（即服务器）上，
 个 一个 topic  可以分为多个 partition，每个 partition 是一个有序的队列；
 7 ）Replica ：副本，为保证集群中的某个节点发生故障时，该节点上的 partition 数据不丢失，
@@ -27,13 +26,15 @@
 
 ## 1：下载安装包
 
-地址：
+地址：https://kafka.apache.org/
 
 ## 2：解压安装包到/home/soft/
 
 tar -zxvf  **.tar -c  /home/soft
 
 ## 3：修改名称 
+
+mv   
 
 ## 4：创建logs文件
 
@@ -190,6 +191,14 @@ group.initial.rebalance.delay.ms=0
 
 ## 6：配置集群
 
+```
+不同机器上的broker.id 不相同。
+broker.id=0
+日志路径配置
+log.dirs=/home/soft/kafka/logs
+zookeeper.connect=node01:2181,node02:2181,node03:2181
+```
+
 已经配置完成主要是修改server.properties
 
 ## 7：逐个启动集群（3台机器）
@@ -244,7 +253,9 @@ esac
 
 ### 后台启动：
 
-
+```shell
+/usr/soft/kafka/bin/kafka-server-start.sh -daemon /usr/soft/kafka/config/server.properties
+```
 
 # 3kafka命令行操作
 
@@ -260,13 +271,24 @@ bin/kafka-topics.sh --zookeeper node01:2181 --list
 
 ## 2:创建分区topics 
 
-first 为名字
+//first 为名字
 
-3为分区副本数据
+//3为分区副本数据
 
-2为定义的分区数
+//2为定义的分区数
 
 bin/kafka-topics.sh --zookeeper node01:2181 --create --topic  first  --partitions  3 --replication-factor 2
+
+
+
+```shell
+bin/kafka-topics.sh --bootstrap-server hadoop102:9092 --create --topic  first  --partitions  3 --replication-factor 2
+
+
+bin/kafka-topics.sh --bootstrap-server hadoop102:9002 --describe --topic first
+```
+
+
 
 
 
@@ -387,8 +409,219 @@ ofeset的维护
 8Kafka 与 Spark Streaming 
 ```
 
-
 # 1kafka_Api
+
+## pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>root</artifactId>
+        <groupId>com.google</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>KafkaDemo</artifactId>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.8.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.10</version>
+        </dependency>
+    </dependencies>
+
+
+</project>
+```
+
+## log4j.properties
+
+```properties
+log4j.rootLogger=INFO, stdout  
+log4j.appender.stdout=org.apache.log4j.ConsoleAppender  
+log4j.appender.stdout.layout=org.apache.log4j.PatternLayout  
+log4j.appender.stdout.layout.ConversionPattern=%d %p [%c] - %m%n  
+log4j.appender.logfile=org.apache.log4j.FileAppender  
+log4j.appender.logfile.File=target/spring.log  
+log4j.appender.logfile.layout=org.apache.log4j.PatternLayout  
+log4j.appender.logfile.layout.ConversionPattern=%d %p [%c] - %m%n  
+```
+
+
+
+## DistributeClient
+
+```java
+package kafka;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
+
+public class DistributeClient {
+	private static String connectString = "192.168.34.102:2181,192.168.34.103:2181,192.168.34.104:2181";
+	
+	private static int sessionTimeout = 2000;
+	private ZooKeeper zk = null;
+	private String parentNode = "/servers";
+
+	// 创建到zk的客户端连接
+	public void getConnect() throws IOException {
+		Watcher watcher =  new Watcher() {
+
+			public void process(WatchedEvent event) {
+				// 再次启动监听
+				try {
+					getServerList();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+		};
+		
+		
+		zk = new ZooKeeper(connectString, sessionTimeout,watcher,Boolean.TRUE);
+	}
+
+	// 获取服务器列表信息
+	public void getServerList() throws Exception {
+
+		// 1获取服务器子节点信息，并且对父节点进行监听
+		List<String> children = zk.getChildren(parentNode, true);
+
+		// 2存储服务器信息列表
+		ArrayList<String> servers = new ArrayList<String>();
+
+		// 3遍历所有节点，获取节点中的主机名称信息
+		for (String child : children) {
+			byte[] data = zk.getData(parentNode + "/" + child, false, null);
+
+			servers.add(new String(data));
+		}
+
+		// 4打印服务器列表信息
+		System.out.println(servers);
+	}
+
+	// 业务功能
+	public void business() throws Exception {
+
+		System.out.println("client is working ...");
+		Thread.sleep(Long.MAX_VALUE);
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		// 1获取zk连接
+		DistributeClient client = new DistributeClient();
+		client.getConnect();
+
+		// 2获取servers的子节点信息，从中获取服务器信息列表
+		client.getServerList();
+
+		// 3业务进程启动
+		client.business();
+	}
+
+}
+```
+
+## DistributeServer
+
+```java
+package kafka;
+
+import java.io.IOException;
+
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
+
+public class DistributeServer {
+	private static String connectString = "192.168.34.102:2181,192.168.34.103:2181,192.168.34.104:2181";
+	private static int sessionTimeout = 2000;
+	private ZooKeeper zk = null;
+	private String parentNode = "/servers";
+	
+	
+	
+	// 创建到zk的客户端连接
+	public void getConnect() throws IOException {
+		
+		Watcher watcher = new Watcher() {
+
+			public void process(WatchedEvent event) {
+				
+			}
+			
+		};
+		
+		zk = new ZooKeeper(connectString, sessionTimeout, watcher,Boolean.TRUE);
+	}
+
+	// 注册服务器
+	public void registServer(String hostname) throws Exception {
+
+		String create = zk.create(parentNode + "/server", hostname.getBytes(), Ids.OPEN_ACL_UNSAFE,
+				CreateMode.EPHEMERAL_SEQUENTIAL);
+
+		System.out.println(hostname + " is online " + create);
+	}
+
+	// 业务功能
+	public void business(String hostname) throws Exception {
+		System.out.println(hostname + " is working ...");
+
+		Thread.sleep(Long.MAX_VALUE);
+	}
+
+	public static void main(String[] args) throws Exception {
+
+		// 1 获取zk连接
+		DistributeServer server = new DistributeServer();
+		server.getConnect();
+
+		// 2 利用zk连接注册服务器信息
+		server.registServer(args[0]);
+
+		// 3 启动业务功能
+		server.business(args[0]);
+	}
+
+}
+```
+
+
+
+
 
 # 2kafka监控
 
